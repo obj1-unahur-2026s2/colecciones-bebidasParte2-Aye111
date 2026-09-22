@@ -1,16 +1,69 @@
 import bebidas.*
 import tito.*
 
-describe "Tests de Tito" {
-  test "Tito consume 10 de Whisky y su sustancia actual es Whisky" {
-    tito.consumir(10, whisky)
-    assert.equals(whisky, tito.sustanciaActual())
-    // assert.equals(1,1) → devuelve TRUE
-    // assert.equals(1,2) → devuelve FALSE
+import tito.*
+
+describe "Tests de Tito y Bebidas Parte 1 y 2" {
+
+  test "Tito arranca con whisky y se calcula su velocidad inicial correctamente" {
+    // Tito arranca consumiendo 0cm3 de whisky -> rendimiento = 0.9^0 = 1
+    // Velocidad = (1 * 490) / 70 = 7
+    assert.equals(7, tito.velocidad())
   }
 
-  test "Tito consume 10 de Whisky y su dosis consumida es 10" {
-    tito.consumir(10, whisky)
-    assert.equals(10, tito.dosisConsumida())
+  test "Tito consume tereré y su velocidad respeta el valor mínimo de rendimiento" {
+    // Terere de 5cm3 -> rendimiento = 1.max(0.1 * 5) = 1.max(0.5) = 1
+    tito.consumir(5, terere)
+    assert.equals(7, tito.velocidad())
+  }
+
+  test "Tito consume cianuro y su rendimiento es 0" {
+    tito.consumir(100, cianuro)
+    assert.equals(0, tito.velocidad())
+  }
+
+  test "Licuado de frutas calcula el rendimiento según sus ingredientes" {
+    // Banana (31) + Frutilla (10) = 41 nutrientes totales
+    licuadoDeFruta.agregarIngrediente(banana)
+    licuadoDeFruta.agregarIngrediente(frutilla)
+    
+    // Para 1000 cm3 -> (41 * 1000) / 1000 = 41
+    assert.equals(41, licuadoDeFruta.rendimientoQueOtorga(1000))
+  }
+
+  test "Agua saborizada calcula 1 unidad fija más el proporcional de la bebida base" {
+    // Agua saborizada con whisky (bebidaBase por defecto)
+    // 40 cm3 de agua saborizada implica 10 cm3 de whisky
+    // Rendimiento whisky = 0.9^10 ≈ 0.348678
+    // Rendimiento total = 1 + 0.9^10
+    const rendimientoEsperado = 1 + (0.9 ** 10)
+    assert.equals(rendimientoEsperado, aguaSaborizada.rendimientoQueOtorga(40))
+  }
+
+  test "Cóctel vacio otorga 0 de rendimiento" {
+    assert.equals(0, coctel.rendimientoQueOtorga(500))
+  }
+
+  test "Cóctel multiplica el rendimiento de sus componentes en partes iguales" {
+    // Agregamos tereré y cianuro al cóctel
+    coctel.agregarBebida(terere)
+    coctel.agregarBebida(cianuro)
+
+    // Como contiene cianuro, cualquier producto resultará en 0
+    assert.equals(0, coctel.rendimientoQueOtorga(100))
+  }
+
+  test "Si se le agregan nuevos ingredientes al licuado afecta al cóctel dinámicamente" {
+    licuadoDeFruta.agregarIngrediente(banana) // 31
+    coctel.agregarBebida(licuadoDeFruta)
+
+    // Rendimiento con solo banana (dosis 1000 cm3) = 31
+    const rendimientoInicial = coctel.rendimientoQueOtorga(1000)
+
+    // Se agrega leche (28) posteriormente
+    licuadoDeFruta.agregarIngrediente(leche)
+
+    // El rendimiento del cóctel debe haber aumentado
+    assert.that(coctel.rendimientoQueOtorga(1000) > rendimientoInicial)
   }
 }
